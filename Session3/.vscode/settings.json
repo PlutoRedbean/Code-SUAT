@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "prog1.C": "cpp",
+        "prog2.C": "cpp",
+        "prog3.C": "cpp",
+        "ostream": "cpp",
+        "prog4.C": "cpp",
+        "prog5.C": "cpp",
+        "prog6.C": "cpp"
+    }
+}

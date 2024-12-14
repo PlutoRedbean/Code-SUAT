@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "prog2.C": "cpp",
+        "prog1.C": "cpp",
+        "prog.C": "cpp",
+        "prog3.C": "cpp",
+        "prog4.C": "cpp",
+        "cmath": "cpp"
+    }
+}
