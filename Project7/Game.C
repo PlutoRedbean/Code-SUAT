@@ -84,32 +84,33 @@ void Game::update()
     if (pl != nullptr && bb != nullptr && bb->col < pl->col) bb->col++;
     else if (pl != nullptr && bb != nullptr && bb->col > pl->col) bb->col--;
     if (pl == nullptr && display_time < 90) {
-        gui.printMsg(9, 25, "GAME OVER, SCORE: ", score);
+        gui.printMsg(8, 25, "GAME OVER, SCORE: ", score);
         display_time++;
+        gui.paintat(9, 30, 'q');
+        gui.paintat(9, 32, 'f');
+        gui.paintat(9, 33, 'o');
+        gui.paintat(9, 34, 'r');
+        gui.paintat(9, 36, 'q');
+        gui.paintat(9, 37, 'u');
+        gui.paintat(9, 38, 'i');
+        gui.paintat(9, 39, 't');
+        gui.paintat(10, 28, 'r');
+        gui.paintat(10, 29, 'e');
+        gui.paintat(10, 30, 's');
+        gui.paintat(10, 31, 'e');
+        gui.paintat(10, 32, 't');
+        gui.paintat(10, 34, 'a');
+        gui.paintat(10, 35, 'f');
+        gui.paintat(10, 36, 't');
+        gui.paintat(10, 37, 'e');
+        gui.paintat(10, 38, 'r');
+        gui.paintat(10, 40, '3');
+        gui.paintat(10, 41, 's');
     } else if (pl == nullptr && display_time >= 90) {
-        gui.paintat(9, 25, '=');
-        gui.paintat(9, 27, 'f');
-        gui.paintat(9, 28, 'o');
-        gui.paintat(9, 29, 'r');
-        gui.paintat(9, 31, 'r');
-        gui.paintat(9, 32, 'e');
-        gui.paintat(9, 33, 's');
-        gui.paintat(9, 34, 'e');
-        gui.paintat(9, 35, 't');
-        gui.paintat(9, 36, ',');
-        gui.paintat(9, 38, 'q');
-        gui.paintat(9, 40, 'f');
-        gui.paintat(9, 41, 'o');
-        gui.paintat(9, 42, 'r');
-        gui.paintat(9, 44, 'q');
-        gui.paintat(9, 45, 'u');
-        gui.paintat(9, 46, 'i');
-        gui.paintat(9, 47, 't');
-        if (pl == nullptr && c == '=') {
-            reboot();
-        } else if (pl == nullptr && c == 'q') {
-            state = 'E';
-        }
+        reboot();
+    }
+    if (pl == nullptr && c == 'q') {
+        state = 'E';
     }
 }
 
@@ -151,10 +152,11 @@ bool Game::end()
 
 void Game::reboot()
 {
-    if (tk != nullptr) tk->col = 70;
-    if (bl != nullptr) bl->row = 0;
     pl = new Player(this);
     items.push_front(pl);
+    if (tk != nullptr) tk->col = 70;
+    if (bl != nullptr) bl->row = 0;
+    if (bb != nullptr) bb->row = 20;
     tk = nullptr;
     bl = nullptr;
     bb = nullptr;
@@ -168,10 +170,10 @@ void Game::reboot()
 
 Game::~Game()
 {
-    if (pl != nullptr) delete pl;
-    if (tk != nullptr) delete tk;
-    if (bl != nullptr) delete bl;
-    if (bb != nullptr) delete bb;
+    delete pl;
+    delete tk;
+    delete bl;
+    delete bb;
     items.clear(); 
     gui.end();
 }

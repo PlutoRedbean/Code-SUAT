@@ -7,10 +7,10 @@ void Player::update(int key) {
     int shoot = 0;
     switch (key) {
         case KEY_LEFT:
-            direction -= 1;
+            if (direction >= -8) direction -= 1;
             break;
         case KEY_RIGHT:
-            direction += 1;
+            if (direction <= 8) direction += 1;
             break;
         case ' ':
             shoot = 1;
