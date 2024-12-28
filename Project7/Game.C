@@ -21,6 +21,7 @@ Game::Game()
     maxBullet = 10;
     bullet_refresh = 0;
     display_time = 0;
+    state = 'R';
 }
 
 void Game::addBullet(size_t r, size_t c)
@@ -85,8 +86,30 @@ void Game::update()
     if (pl == nullptr && display_time < 90) {
         gui.printMsg(9, 25, "GAME OVER, SCORE: ", score);
         display_time++;
-    } else if (pl == nullptr && c == 'q') {
-        reboot();
+    } else if (pl == nullptr && display_time >= 90) {
+        gui.paintat(9, 25, '=');
+        gui.paintat(9, 27, 'f');
+        gui.paintat(9, 28, 'o');
+        gui.paintat(9, 29, 'r');
+        gui.paintat(9, 31, 'r');
+        gui.paintat(9, 32, 'e');
+        gui.paintat(9, 33, 's');
+        gui.paintat(9, 34, 'e');
+        gui.paintat(9, 35, 't');
+        gui.paintat(9, 36, ',');
+        gui.paintat(9, 38, 'q');
+        gui.paintat(9, 40, 'f');
+        gui.paintat(9, 41, 'o');
+        gui.paintat(9, 42, 'r');
+        gui.paintat(9, 44, 'q');
+        gui.paintat(9, 45, 'u');
+        gui.paintat(9, 46, 'i');
+        gui.paintat(9, 47, 't');
+        if (pl == nullptr && c == '=') {
+            reboot();
+        } else if (pl == nullptr && c == 'q') {
+            state = 'E';
+        }
     }
 }
 
@@ -121,9 +144,9 @@ void Game::hitPlayer(Item* bomb, size_t player_c)
     }
 }
 
-bool Game::done()
+bool Game::end()
 {
-    return pl == nullptr;
+    return state == 'E';
 }
 
 void Game::reboot()
@@ -145,13 +168,10 @@ void Game::reboot()
 
 Game::~Game()
 {
-    delete pl;
-    delete tk;
-    delete bl;
-    delete bb;
-    for (Item* item : items) {
-        delete item;
-    }
+    if (pl != nullptr) delete pl;
+    if (tk != nullptr) delete tk;
+    if (bl != nullptr) delete bl;
+    if (bb != nullptr) delete bb;
     items.clear(); 
     gui.end();
 }

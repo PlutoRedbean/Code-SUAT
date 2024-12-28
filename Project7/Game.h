@@ -23,6 +23,7 @@ class Game {
     int score;
     int bullet_refresh;
     int display_time;
+    char state;
 public:
     Game() ;
     ~Game();
@@ -32,6 +33,6 @@ public:
     void hitPlayer(Item* bomb, size_t player_c);
     void paintat(size_t ro, size_t cl, char c) {gui.paintat(ro, cl, c);}
     void reboot();
-    bool done();
+    bool end();
 };
 #endif

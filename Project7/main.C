@@ -20,7 +20,8 @@ int main()
         currentTime = (time_now.tv_sec * 1000) + (time_now.tv_usec / 1000);
         if (currentTime - oldTime < 50) {usleep(25);continue;}
         // int key = gui.get();
-        game.update();
+        if (game.end()) break;
+        else game.update();
         oldTime = currentTime;
     }
     return 0;
