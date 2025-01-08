@@ -35,8 +35,8 @@ class Game {
     size_t tank_number = 0;
     size_t tank_max_number = MAXTANK;
 public:
-    int playground[80][30];
-    Game() ;
+    int playground[80][30] = {};
+    Game(char** argv) ;
     ~Game() {gui.end();}
     void addRemovableItem(RemovableItem*);
     void update();
@@ -49,9 +49,11 @@ public:
     void updateTanks(int c);
     void medRefresh();
     void pg_spawn();
+    void pg_read(ifstream &Map);
     void addColor(int num);
     void stopColor(int num);
     bool checkHit(int r, int c, int range, int shooter); //range, hit range, can be 0 or 1
+    bool spawnable(int r, int c, int range);
     // void medSpawn();
     // void tank_spawn(int player_range, int tank_range);
 };

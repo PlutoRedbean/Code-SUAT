@@ -6,8 +6,9 @@
 #include "Medpack.h"
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 
-Game::Game() {
+Game::Game(char** argv) {
     for (int i = 0; i < 80; i++) {
         for (int j = 0; j < 30; j++) {
             playground[i][j] == 0;
@@ -15,7 +16,12 @@ Game::Game() {
     }
     gui.init();
 
-    pg_spawn();
+    ifstream Map(argv[1]);
+    if (Map.is_open()) {
+        pg_read(Map);
+    } else {
+        pg_spawn();
+    }
     for (int i = 0; i < 80; i++) {
         for (int j = 0; j < 30; j++) {
             if (playground[i][j] == 1) gui.paintat(j + 1, i + 1, '%');
@@ -23,14 +29,14 @@ Game::Game() {
     }
 
     pl = new Player(this);
-    while (playground[pl->col - 1][pl->row - 1] == 1 || playground[pl->col - 2][pl->row - 1] == 1 || playground[pl->col][pl->row - 1] == 1) {
+    while (spawnable(pl->row, pl->col, 1)) {
         pl->row = (rand() % (30 - 1 + 1)) + 1;
         pl->col = (rand() % (79 - 2 + 1)) + 2;
     }
 
     for (int i = 0; i < MAXCURRENTTANK; i++) {
         tank = new EnemyTank(this);
-        while (playground[tank->col - 1][tank->row - 1] == 1 || playground[tank->col - 2][tank->row - 1] == 1 || playground[tank->col][tank->row - 1] == 1) {
+        while (spawnable(tank->row, tank->col, 1)) {
             tank->row = (rand() % (30 - 1 + 1)) + 1;
             tank->col = (rand() % (78 - 3 + 1)) + 3;
         }
@@ -41,7 +47,7 @@ Game::Game() {
     for (int i = 0; i < MAXMEDPACK; i++) {
         int row = (rand() % (30 - 1 + 1)) + 1;
         int col = (rand() % (79 - 2 + 1)) + 2;
-        while (playground[col - 1][row - 1] == 1 || playground[col - 2][row - 1] == 1 || playground[col][row - 1] == 1) {
+        while (spawnable(row, col, 1)) {
             row = (rand() % (30 - 1 + 1)) + 1;
             col = (rand() % (79 - 2 + 1)) + 2;
         }
@@ -131,10 +137,12 @@ void Game::updateRemovableItems(int c) {
 }
 
 void Game::bang() {
-    int c;
     list<Tank*>::iterator bi = tanks.begin();
     while (bi != tanks.end() ) {
-        if (pl->col == (*bi)->col && pl->row == (*bi)->row) {
+        if (pl->col >= (*bi)->col - 1 && pl->col <= (*bi)->col + 1 && pl->row == (*bi)->row && (*bi)->type == NORMAL) {
+            (*bi)->setHealth(0);
+            pl->setHealth(0);
+        } else if (pl->col >= (*bi)->col - 2 && pl->col <= (*bi)->col + 2 && pl->row == (*bi)->row && (*bi)->type == SUPER) {
             (*bi)->setHealth(0);
             pl->setHealth(0);
         }
@@ -207,7 +215,7 @@ void Game::pg_spawn() {
     int min = 2;
     for (int i = 0; i < 80; i++) {
         for (int j = 0; j < 30; j++) {
-            if (rand() % 100 == 1) {
+            if (rand() % 100 == 3) {
                 playground[i][j] = 1;
                 int extension = (rand() % (max - min + 1)) + min;
                 if (rand() % 2 == 1) {
@@ -234,6 +242,40 @@ void Game::pg_spawn() {
             }
         }
     }
+}
+
+void Game::pg_read(ifstream &Map) {
+    char** read = new char*[33];
+    for (int i = 0; i < 33; i++) {
+        if (i != 32) read[i] = new char[82];
+        else read[32] = new char[1];
+    }
+    read[32][0] = '\0';
+
+    string map;
+    int row = 0;
+    while (!Map.eof()) {
+        getline(Map, map);
+        if (row < 32) {
+            for (int i = 0; i < 82; i++) {
+                read[row][i] = map[i];
+            }
+            row++;
+            for (int i = 0; i < 30; i++) {
+                for (int j = 0; j < 80; j++) {
+                    playground[j][i] = read[i + 1][j + 1] == '%' ? 1 : 0;
+                }
+            }
+        }
+    }
+}
+
+bool Game::spawnable(int r, int c, int range) {
+    return playground[c - 1][r - 1] == 1 ||
+           playground[c - 2][r - 1] == 1 ||
+           playground[c - 3][r - 1] == 1 ||
+           playground[c][r - 1] == 1     ||
+           playground[c + 1][r - 1] == 1;
 }
 
 // void Game::tank_spawn(int player_range, int tank_range) {

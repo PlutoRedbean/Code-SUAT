@@ -1,5 +1,5 @@
 CC = g++
-CCFLAGS = -g -Wall
+CCFLAGS = -g -w
 CCLIBS = -lncurses
 mygame: main.o Gui.o Game.o Item.o Player.o Bullet.o Tank.o RemovableItem.o EnemyTank.o Mine.o Medpack.o
 	$(CC) $(CCFLAGS) -o mygame main.o Gui.o Game.o Item.o Player.o Bullet.o Tank.o RemovableItem.o EnemyTank.o Mine.o Medpack.o $(CCLIBS)

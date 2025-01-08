@@ -86,18 +86,21 @@ bool EnemyTank::out() {return false;}
 
 void EnemyTank::move(int r, int c) {
     if (movable()) {
-        if (rand() % 100 < 60 && type == SUPER) {
-            if (row < r) {dy = 1;direction = DOWN;}
-            else if (row > r) {dy = -1;direction = UP;}
-            if (col < c) {dx = 1;direction = RIGHT;}
-            else if (col > c) {dx = -1;direction = LEFT;}
-            if (dx != 0 && dy != 0 && (rand() % 2 == 1)) {
-                dx = 0;
-                direction = (dy == 1) ? direction = DOWN : direction = UP;
-            } else if (dx != 0 && dy != 0 && (rand() % 2 == 0)) {
-                dy = 0;
-                direction = (dx == 1) ? direction = RIGHT : direction = LEFT;
+        if (rand() % 100 < 80 && type == SUPER) {
+            if (rand() % 2 == 1) {
+                if (row < r) {dy = 1;direction = DOWN;}
+                else if (row > r) {dy = -1;direction = UP;}
+            } else {
+                if (col < c) {dx = 1;direction = RIGHT;}
+                else if (col > c) {dx = -1;direction = LEFT;}
             }
+            // if (dx != 0 && dy != 0 && (rand() % 2 == 1)) {
+            //     dx = 0;
+            //     direction = (dy == 1) ? direction = DOWN : direction = UP;
+            // } else if (dx != 0 && dy != 0 && (rand() % 2 == 0)) {
+            //     dy = 0;
+            //     direction = (dx == 1) ? direction = RIGHT : direction = LEFT;
+            // }
         } else if (rand() % 100 < 40 && type == NORMAL) {
             direction = rand() % 4;
             switch (direction) {
@@ -191,25 +194,29 @@ void EnemyTank::hitObstacle() {
             dy = 0;
         }
         case SUPER :
-        if (dx == 1 && direction == RIGHT && game->playground[col + 1][row - 1] == 1) {
+        if (dx == 1 && direction == RIGHT && game->playground[col + 2][row - 1] == 1) {
             dx = 0;
         }
-        if (dx == -1 && direction == LEFT && game->playground[col - 3][row - 1] == 1) {
+        if (dx == -1 && direction == LEFT && game->playground[col - 4][row - 1] == 1) {
             dx = 0;
         }
         if (dy == 1 && direction == DOWN &&
-            (game->playground[col + 1][row] == 1 ||
+            (game->playground[col + 2][row] == 1 ||
+             game->playground[col + 1][row] == 1 ||
              game->playground[col - 1][row] == 1 ||
              game->playground[col - 2][row] == 1 ||
              game->playground[col - 3][row] == 1 ||
+             game->playground[col - 4][row] == 1 ||
              game->playground[col][row] == 1)) {
             dy = 0;
         }
         if (dy == -1 && direction == UP &&
-            (game->playground[col + 1][row - 2] == 1 ||
+            (game->playground[col + 2][row - 2] == 1 ||
+             game->playground[col + 1][row - 2] == 1 ||
              game->playground[col - 1][row - 2] == 1 ||
              game->playground[col - 2][row - 2] == 1 ||
              game->playground[col - 3][row - 2] == 1 ||
+             game->playground[col - 4][row - 2] == 1 ||
              game->playground[col][row - 2] == 1)) {
             dy = 0;
         }
