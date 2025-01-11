@@ -21,5 +21,6 @@ public:
     bool mineHit(int r, int c, int xr);
     bool medHit(int r, int c, int xr);
     void hitObstacle();
+    bool dead();
 };
 #endif

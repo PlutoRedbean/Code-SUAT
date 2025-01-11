@@ -57,6 +57,10 @@ void Gui::printMsg(int row, int col, const char* prompt, int v) {
     mvwprintw(win, row, col+strlen(prompt)+1, s);
 }
 
+void Gui::print(int row, int col, const char* prompt) {
+    mvwprintw(win, row, col, prompt);
+}
+
 void Gui::clear() {
     werase(win);
     attron(COLOR_PAIR(1));

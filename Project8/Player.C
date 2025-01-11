@@ -93,7 +93,7 @@ bool Player::isHit(int r, int c, int xr) {
 
 bool Player::mineHit(int r, int c, int xr) {
     if (row <= r + xr && row >= r - xr) {
-        if (col <= c + xr && col >= c - xr) return true;
+        if (col <= c + xr + 1 && col >= c - xr - 1) return true;
     }
     return false;
 }
@@ -138,4 +138,8 @@ void Player::hitObstacle() {
         (game->playground[col - 1][row - 2] == 1 || game->playground[col - 2][row - 2] == 1 || game->playground[col][row - 2] == 1)) {
         dy = 0;
     }
+}
+
+bool Player::dead() {
+    return health <= 0;
 }

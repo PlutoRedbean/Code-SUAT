@@ -5,10 +5,17 @@
 #include "Item.h"
 using namespace std;
 
+#define END 100
+#define RUNNING 101
+#define PAUSE 102
+#define RESET 103
+#define DEAD 104
+
 #define MAXTANK 20
 #define MAXMEDPACK 4
 #define MEDPACKTIME 300
 #define MAXCURRENTTANK 4
+
 #define PLAYERCOLOR 10
 #define NORMALCOLOR 11
 #define SUPERCOLOR 12
@@ -31,11 +38,12 @@ class Game {
     list <RemovableItem*> items;
     list <Tank*> tanks;
     size_t score;
-    int med_refresh_time = 0;
-    size_t tank_number = 0;
-    size_t tank_max_number = MAXTANK;
+    int med_refresh_time;
+    size_t tank_number;
+    size_t tank_max_number;
 public:
     int playground[80][30] = {};
+    int state = RUNNING;
     Game(char** argv) ;
     ~Game() {gui.end();}
     void addRemovableItem(RemovableItem*);
@@ -49,9 +57,12 @@ public:
     void updateTanks(int c);
     void medRefresh();
     void pg_spawn();
-    void pg_read(ifstream &Map);
+    void pg_read(ifstream& Map);
+    void map_paint();
     void addColor(int num);
     void stopColor(int num);
+    void obj_init(Game* init);
+    void obstacleExpand(int& i, int& j, int& extension);
     bool checkHit(int r, int c, int range, int shooter); //range, hit range, can be 0 or 1
     bool spawnable(int r, int c, int range);
     // void medSpawn();

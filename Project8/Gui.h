@@ -30,6 +30,7 @@ public:
     void redraw();
     void end() {endwin();}
     void color_on(int);
+    void print(int row, int col, const char* prompt);
     void color_off(int);
 };
 #endif

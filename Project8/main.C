@@ -25,6 +25,7 @@ int main(int argc, char** argv)
         currentTime = (time_now.tv_sec * 1000) + (time_now.tv_usec / 1000);
         if (currentTime - oldTime < 60) {usleep(22);continue;}
         game.update();
+        if (game.state == END) break;
         oldTime = currentTime;
     }
     return 0;

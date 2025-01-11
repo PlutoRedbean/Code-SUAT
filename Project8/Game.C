@@ -22,37 +22,9 @@ Game::Game(char** argv) {
     } else {
         pg_spawn();
     }
-    for (int i = 0; i < 80; i++) {
-        for (int j = 0; j < 30; j++) {
-            if (playground[i][j] == 1) gui.paintat(j + 1, i + 1, '%');
-        }
-    }
+    map_paint();
 
-    pl = new Player(this);
-    while (spawnable(pl->row, pl->col, 1)) {
-        pl->row = (rand() % (30 - 1 + 1)) + 1;
-        pl->col = (rand() % (79 - 2 + 1)) + 2;
-    }
-
-    for (int i = 0; i < MAXCURRENTTANK; i++) {
-        tank = new EnemyTank(this);
-        while (spawnable(tank->row, tank->col, 1)) {
-            tank->row = (rand() % (30 - 1 + 1)) + 1;
-            tank->col = (rand() % (78 - 3 + 1)) + 3;
-        }
-        tanks.push_back(tank);
-        tank_number++;
-    }
-
-    for (int i = 0; i < MAXMEDPACK; i++) {
-        int row = (rand() % (30 - 1 + 1)) + 1;
-        int col = (rand() % (79 - 2 + 1)) + 2;
-        while (spawnable(row, col, 1)) {
-            row = (rand() % (30 - 1 + 1)) + 1;
-            col = (rand() % (79 - 2 + 1)) + 2;
-        }
-        addRemovableItem(new Medpack(this, (rand() % (30 - 1 + 1)) + 1, (rand() % (79 - 2 + 1)) + 2, 0, 0));
-    }
+    obj_init(this);
 
     score = 0;
 }
@@ -65,36 +37,69 @@ void Game::update() {
     gui.clear(); //clear everything on the screen
 
     /*调试:输出链表的节点数*/
-    /*list<RemovableItem*>::iterator bi = items.begin();
+    list<Tank*>::iterator bi = tanks.begin();
     int length = 0;
-    while (bi != items.end() ) {
-        if ( dynamic_cast<Medpack*>(*bi) ) {
-            length++;
-        }
+    while (bi != tanks.end() ) {
+        length++;
         bi++;
     }
     gui.color_on(1);
-    gui.printMsg(10, MAXCOL + 3, "  List: ", length);
-    gui.color_off(1);*/
+    gui.printMsg(6, MAXCOL + 3, "  List: ", length);
+    gui.color_off(1);
 
     gui.printMsg(2, MAXCOL + 3, "Bullet: ", pl->reportNumBullet());
     gui.printMsg(3, MAXCOL + 3, "  Tank: ", tank_max_number);
     gui.printMsg(4, MAXCOL + 3, "Health: ", pl->reportHealth());
     gui.printMsg(5, MAXCOL + 3, " Score: ", score);
-
+    gui.print(7, MAXCOL + 3, "R for reset");
+    gui.print(8, MAXCOL + 3, "Q for quit");
+    gui.print(9, MAXCOL + 3, "ESC for pause");
+    
     int c = gui.get();
-    pl->update(c);
-    pl->move(0, 0);
-    medRefresh();
-    updateRemovableItems(c);
-    updateTanks(c);
-
-    for (int i = 0; i < 80; i++) {
-        for (int j = 0; j < 30; j++) {
-            if (playground[i][j] == 1) gui.paintat(j + 1, i + 1, '%');
-        }
+    switch (state) {
+        case RUNNING :
+            pl->update(c);
+            pl->move(0, 0);
+            medRefresh();
+            updateRemovableItems(c);
+            updateTanks(c);
+            map_paint();
+            if (pl->dead()) state = DEAD;
+            if (c == 27) state = PAUSE;
+            if (c == 114 || c == 82) state = RESET;
+            if (c == 113 || c == 81) state = END;
+        break;
+        case DEAD :
+            gui.printMsg((MAXROW / 2) - 1, (MAXCOL / 2) - 11, "GAME OVER Score: ", score);
+            gui.print((MAXROW / 2) + 1, (MAXCOL / 2) - 15, "Press R for reset, Q for quit");
+            if (c == 114 || c == 82) state = RESET;
+            if (c == 113 || c == 81) state = END;
+            break;
+        case PAUSE :
+            gui.printMsg((MAXROW / 2) - 1, (MAXCOL / 2) - 11, "GAME PAUSED Score: ", score);
+            gui.print((MAXROW / 2) + 1, (MAXCOL / 2) - 15, "Press R for reset, Q for quit");
+            if (c == 27) state = RUNNING;
+            if (c == 114 || c == 82) state = RESET;
+            if (c == 113 ||c == 81) state = END;
+            break;
+        case RESET :
+            delete pl;
+            list<Tank*>::iterator tks = tanks.begin();
+            while (tks != tanks.end() ) {
+                delete *tks;
+                tks = tanks.erase(tks);
+                // tks++;
+            }
+            list<RemovableItem*>::iterator itms = items.begin();
+            while (itms != items.end() ) {
+                delete *itms;
+                itms = items.erase(itms);
+                // itms++;
+            }
+            obj_init(this);
+            state = RUNNING;
+            break;
     }
-
     gui.redraw(); //draw things
 }
 
@@ -140,10 +145,8 @@ void Game::bang() {
     list<Tank*>::iterator bi = tanks.begin();
     while (bi != tanks.end() ) {
         if (pl->col >= (*bi)->col - 1 && pl->col <= (*bi)->col + 1 && pl->row == (*bi)->row && (*bi)->type == NORMAL) {
-            (*bi)->setHealth(0);
             pl->setHealth(0);
         } else if (pl->col >= (*bi)->col - 2 && pl->col <= (*bi)->col + 2 && pl->row == (*bi)->row && (*bi)->type == SUPER) {
-            (*bi)->setHealth(0);
             pl->setHealth(0);
         }
         bi++;
@@ -215,36 +218,29 @@ void Game::pg_spawn() {
     int min = 2;
     for (int i = 0; i < 80; i++) {
         for (int j = 0; j < 30; j++) {
-            if (rand() % 100 == 3) {
-                playground[i][j] = 1;
-                int extension = (rand() % (max - min + 1)) + min;
-                if (rand() % 2 == 1) {
-                    for (int k = 1; k <= extension; k++) {
-                        if (j - k >= 0) {
-                            playground[i][j - k] = 1;
-                        }
-                        if (j + k < 30) {
-                            playground[i][j + k] = 1;
-                        }
-                    }
-                } else {
-                    for (int k = 1; k <= extension; k++) {
-                        if (i - k >= 0) {
-                            playground[i - k][j] = 1;
-                        }
-                        if (i + k < 80) {
-                            playground[i + k][j] = 1;
-                        }
-                    }
-                }
-            } else {
-                playground[i][j] = 0;
-            }
+            if (rand() % 100 != 3) continue;
+            playground[i][j] = 1;
+            int extension = (rand() % (max - min + 1)) + min;
+            obstacleExpand(i, j, extension);
         }
     }
 }
 
-void Game::pg_read(ifstream &Map) {
+void Game::obstacleExpand(int& i, int& j, int& extension) {
+    if (rand() % 2 == 1) {
+        for (int k = 1; k <= extension; k++) {
+            if (j - k >= 0) playground[i][j - k] = 1;
+            if (j + k < 30) playground[i][j + k] = 1;
+        }
+    } else {
+        for (int k = 1; k <= extension; k++) {
+            if (i - k >= 0) playground[i - k][j] = 1;
+            if (i + k < 80) playground[i + k][j] = 1;
+        }
+    }
+}
+
+void Game::pg_read(ifstream& Map) {
     char** read = new char*[33];
     for (int i = 0; i < 33; i++) {
         if (i != 32) read[i] = new char[82];
@@ -256,25 +252,60 @@ void Game::pg_read(ifstream &Map) {
     int row = 0;
     while (!Map.eof()) {
         getline(Map, map);
-        if (row < 32) {
-            for (int i = 0; i < 82; i++) {
-                read[row][i] = map[i];
-            }
-            row++;
-            for (int i = 0; i < 30; i++) {
-                for (int j = 0; j < 80; j++) {
-                    playground[j][i] = read[i + 1][j + 1] == '%' ? 1 : 0;
-                }
-            }
+        if (row >= 32) {
+            continue;
+        }
+        for (int i = 0; i < 82; i++) {
+            read[row][i] = map[i];
+        }
+        row++;
+    }
+}
+
+void Game::map_paint() {
+    for (int i = 0; i < 80; i++) {
+        for (int j = 0; j < 30; j++) {
+            if (playground[i][j] == 1) gui.paintat(j + 1, i + 1, '%');
         }
     }
+}
+
+void Game::obj_init(Game* init) {
+    med_refresh_time = 0;
+    tank_number = 0;
+    tank_max_number = MAXTANK;
+    pl = new Player(this);
+    while (spawnable(pl->row, pl->col, 1)) {
+        pl->row = (rand() % (30 - 1 + 1)) + 1;
+        pl->col = (rand() % (79 - 2 + 1)) + 2;
+    }
+    for (int i = 0; i < MAXCURRENTTANK; i++) {
+        tank = new EnemyTank(init);
+        while (spawnable(tank->row, tank->col, 1)) {
+            tank->row = (rand() % (30 - 1 + 1)) + 1;
+            tank->col = (rand() % (78 - 3 + 1)) + 3;
+        }
+        tanks.push_back(tank);
+        tank_number++;
+    }
+
+    for (int i = 0; i < MAXMEDPACK; i++) {
+        int row = (rand() % (30 - 1 + 1)) + 1;
+        int col = (rand() % (79 - 2 + 1)) + 2;
+        while (spawnable(row, col, 1)) {
+            row = (rand() % (30 - 1 + 1)) + 1;
+            col = (rand() % (79 - 2 + 1)) + 2;
+        }
+        addRemovableItem(new Medpack(init, (rand() % (30 - 1 + 1)) + 1, (rand() % (79 - 2 + 1)) + 2, 0, 0));
+    }
+    score = 0;
 }
 
 bool Game::spawnable(int r, int c, int range) {
     return playground[c - 1][r - 1] == 1 ||
            playground[c - 2][r - 1] == 1 ||
            playground[c - 3][r - 1] == 1 ||
-           playground[c][r - 1] == 1     ||
+           playground[c    ][r - 1] == 1 ||
            playground[c + 1][r - 1] == 1;
 }
 
