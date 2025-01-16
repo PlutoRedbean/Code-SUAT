@@ -2,6 +2,8 @@
 #define _LASERTANK_H_
 #include "Game.h"
 #include "Tank.h"
+#define NOSHOOT 0
+#define SHOOT 1
 
 class LaserTank: public Tank {
 protected:
@@ -9,17 +11,21 @@ protected:
     int updateCount;
     int direction;
 public:
+    int shoot_count = 0;
+    LaserTank (Game* g);
     int type;
-    void update(int key) = 0;
-    virtual void move(int r, int c) = 0;
+    int status = NOSHOOT;
+    void update(int key);
+    void move(int r, int c);
     int reportHealth() {return health;}
-    virtual int reportNumBullet() {return 0;};
-    virtual bool isHit(int r, int w, int range) = 0;
-    virtual void reduceHealth() = 0;
+    int reportNumBullet() {return 0;};
+    bool isHit(int r, int w, int range);
+    void reduceHealth();
+    bool movable ();
+    bool shootable (int r, int c);
     bool died() { return false;}
     bool out() {return false;}
-    virtual void hitObstacle() = 0;
-    void setHealth(int hp);
+    void hitObstacle();
 };
 
 #endif

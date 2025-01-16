@@ -27,7 +27,9 @@ using namespace std;
 class RemovableItem;
 class Player;
 class Bullet;
+class Laser;
 class Tank;
+class LaserTank;
 class Mine;
 class Medpack;
 
@@ -35,6 +37,7 @@ class Game {
     Gui gui;
     Player* pl;
     Tank* tank;
+    LaserTank* laser;
     list <RemovableItem*> items;
     list <Tank*> tanks;
     size_t score;

@@ -20,6 +20,7 @@ public:
         init_pair(13, COLOR_MAGENTA, COLOR_BLACK);
         init_pair(14, COLOR_GREEN, COLOR_BLACK);
         init_pair(15, COLOR_WHITE, COLOR_WHITE);
+        init_pair(16, COLOR_RED, COLOR_BLACK);
     }
     ~Gui() {endwin();}
     void init();

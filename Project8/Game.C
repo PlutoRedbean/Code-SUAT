@@ -1,6 +1,8 @@
 #include "Game.h"
 #include "Player.h"
 #include "EnemyTank.h"
+#include "LaserTank.h"
+#include "Laser.h"
 #include "Bullet.h"
 #include "Mine.h"
 #include "Medpack.h"
@@ -37,7 +39,7 @@ void Game::update() {
     gui.clear(); //clear everything on the screen
 
     /*调试:输出链表的节点数*/
-    list<Tank*>::iterator bi = tanks.begin();
+    /*list<Tank*>::iterator bi = tanks.begin();
     int length = 0;
     while (bi != tanks.end() ) {
         length++;
@@ -45,7 +47,7 @@ void Game::update() {
     }
     gui.color_on(1);
     gui.printMsg(6, MAXCOL + 3, "  List: ", length);
-    gui.color_off(1);
+    gui.color_off(1);*/
 
     gui.printMsg(2, MAXCOL + 3, "Bullet: ", pl->reportNumBullet());
     gui.printMsg(3, MAXCOL + 3, "  Tank: ", tank_max_number);
@@ -127,6 +129,12 @@ void Game::updateTanks(int c) {
         }
         tanks.push_back(tank);
     }
+    if (laser != nullptr) {laser->update(c);laser->move(pl->row, pl->col);}
+    if (laser != nullptr && laser->reportHealth() <= 0) {
+        score += 1000;
+        delete laser;
+        laser = nullptr;
+    }
 }
 
 void Game::updateRemovableItems(int c) {
@@ -151,10 +159,14 @@ void Game::bang() {
         }
         bi++;
     }
+    if (laser != nullptr && pl->col >= laser->col - 1 && pl->col <= laser->col + 1
+        && pl->row == laser->row && laser->type == LASER) {
+        pl->setHealth(0);
+    }
 }
 
 bool Game::hitPlayer(int r, int w, int range, int shooter) {
-    if (pl->isHit(r, w, range + 1) && shooter != 2) {
+    if (pl->isHit(r, w, range + 1) && shooter != PLAYER) {
         pl->reduceHealth();
         return true;
     }
@@ -180,11 +192,15 @@ bool Game::medPick(int r, int w, int range) {
 bool Game::checkHit(int r, int w, int range, int shooter) {
     list<Tank*>::iterator bi = tanks.begin();
     while (bi != tanks.end() ) {
-        if ( (*bi)->isHit(r, w, (*bi)->type == NORMAL ? range + 1 : range + 2) && shooter == 2 ) {
+        if ( (*bi)->isHit(r, w, (*bi)->type == NORMAL ? range + 1 : range + 2) && shooter == PLAYER ) {
             (*bi)->reduceHealth();
             return true;
         }
         bi++;
+    }
+    if ( laser != nullptr && laser->isHit(r, w, range + 2) && shooter == PLAYER ) {
+        laser->reduceHealth();
+        return true;
     }
     return false;
 }
@@ -260,6 +276,11 @@ void Game::pg_read(ifstream& Map) {
         }
         row++;
     }
+    for (int i = 0; i < 30; i++) {
+        for (int j = 0; j < 80; j++) {
+            playground[j][i] = read[i + 1][j + 1] == '%' ? 1 : 0;
+        }
+    }
 }
 
 void Game::map_paint() {
@@ -288,6 +309,11 @@ void Game::obj_init(Game* init) {
         tanks.push_back(tank);
         tank_number++;
     }
+    laser = new LaserTank(init);
+    while (spawnable(laser->row, laser->col, 1)) {
+        laser->row = (rand() % (30 - 1 + 1)) + 1;
+        laser->col = (rand() % (78 - 3 + 1)) + 3;
+    }
 
     for (int i = 0; i < MAXMEDPACK; i++) {
         int row = (rand() % (30 - 1 + 1)) + 1;
@@ -308,28 +334,3 @@ bool Game::spawnable(int r, int c, int range) {
            playground[c    ][r - 1] == 1 ||
            playground[c + 1][r - 1] == 1;
 }
-
-// void Game::tank_spawn(int player_range, int tank_range) {
-//     bool spawnable = 0;
-//     tank = new EnemyTank(this);
-//     while (!spawnable) {
-//         if (pl->col <= tank->col + player_range && pl->col >= tank->col - player_range &&
-//             pl->row <= tank->row + player_range && pl->row >= tank->row - player_range) {
-//             delete tank;
-//             tank = new EnemyTank(this);
-//             continue;
-//         }
-//         list<Tank*>::iterator bi = tanks.begin();
-//         while ( bi != tanks.end() ) {
-//             if ((*bi)->col <= tank->col + tank_range && (*bi)->col >= tank->col - tank_range &&
-//                 (*bi)->row <= tank->row + tank_range && (*bi)->row >= tank->row - tank_range) {
-//                 delete tank;
-//                 tank = new EnemyTank(this);
-//                 break;
-//             }
-//             bi++;
-//         }
-//     }
-//     tanks.push_back(tank);
-//     tank_number++;
-// }

@@ -1,8 +1,8 @@
 CC = g++
 CCFLAGS = -g -w
 CCLIBS = -lncurses
-mygame: main.o Gui.o Game.o Item.o Player.o Bullet.o Tank.o RemovableItem.o EnemyTank.o Mine.o Medpack.o
-	$(CC) $(CCFLAGS) -o mygame main.o Gui.o Game.o Item.o Player.o Bullet.o Tank.o RemovableItem.o EnemyTank.o Mine.o Medpack.o $(CCLIBS)
+mygame: main.o Gui.o Game.o Item.o Player.o Bullet.o Tank.o RemovableItem.o EnemyTank.o Mine.o Medpack.o Laser.o LaserTank.o
+	$(CC) $(CCFLAGS) -o mygame main.o Gui.o Game.o Item.o Player.o Bullet.o Tank.o RemovableItem.o EnemyTank.o Mine.o Medpack.o Laser.o LaserTank.o $(CCLIBS)
 
 Gui.o: Gui.h Gui.C
 	$(CC) $(CCFLAGS) -c -o Gui.o Gui.C
@@ -30,6 +30,12 @@ Player.o: Player.h Player.C
 
 Tank.o: Tank.h Tank.C
 	$(CC) $(CCFLAGS) -c -o Tank.o Tank.C
+
+LaserTank.o: LaserTank.h LaserTank.C
+	$(CC) $(CCFLAGS) -c -o LaserTank.o LaserTank.C
+
+Laser.o: Laser.h Laser.C
+	$(CC) $(CCFLAGS) -c -o Laser.o Laser.C
 
 RemovableItem.o: RemovableItem.h RemovableItem.C
 	$(CC) $(CCFLAGS) -c -o RemovableItem.o RemovableItem.C
